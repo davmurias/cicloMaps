@@ -1,0 +1,11 @@
+[
+  {
+    "id": "e7b0ea8c-21bd-47e7-9937-7aa921674282",
+    "origin": "Madrid Centro",
+    "destination": "Anillo Verde",
+    "waypoints": [
+      "Casa de Campo"
+    ],
+    "createdAt": "2026-04-13T18:47:20.058Z"
+  }
+]

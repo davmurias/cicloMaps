@@ -1,0 +1,36 @@
+:root {
+  --bg: #0f172a;
+  --card-bg: rgba(30, 41, 59, 0.85);
+  --text: #f8fafc;
+  --glow: #38bdf8;
+  --anillo: #a855f7;
+  --alta: #22c55e;
+  --media: #eab308;
+  --baja: #ef4444;
+}
+
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* Scrollbars minimalistas */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.4);
+}
