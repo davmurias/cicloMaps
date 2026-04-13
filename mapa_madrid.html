@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Red Ciclista - Madrid</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --text: #f8fafc;
+      --glow: #38bdf8;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      filter: saturate(1.2) contrast(1.1);
+    }
+
+    /* Glassmorphism UI Overlay */
+    .dashboard {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 24px;
+      width: 340px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.1);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .dashboard:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.2);
+    }
+
+    .routing-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 24px;
+      width: 320px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .routing-panel:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.2);
+    }
+
+    .routing-panel h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(to right, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .routing-input {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .routing-input:focus {
+      border-color: #38bdf8;
+    }
+
+    .routing-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.3s, transform 0.2s;
+    }
+
+    .routing-btn:hover {
+      opacity: 0.9;
+    }
+
+    .routing-btn:active {
+      transform: translateY(2px);
+    }
+
+    .routing-status {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin: 0;
+    }
+
+    /* Google Maps Autocomplete overrides for dark theme */
+    .pac-container {
+      background-color: #1e293b !important;
+      border: 1px solid rgba(56, 189, 248, 0.3) !important;
+      border-radius: 8px !important;
+      font-family: 'Outfit', sans-serif !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    }
+    .pac-item {
+      color: #cbd5e1 !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+      padding: 8px !important;
+      cursor: pointer;
+    }
+    .pac-item:hover {
+      background-color: rgba(56, 189, 248, 0.1) !important;
+    }
+    .pac-item-query {
+      color: #fff !important;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      margin: 0 0 20px 0;
+      font-size: 0.95rem;
+      color: #94a3b8;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .color-box {
+      width: 24px;
+      height: 8px;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .color-box::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 8px;
+      opacity: 0.4;
+      background: inherit;
+      filter: blur(4px);
+    }
+
+    /* Interactive hover panel on map features */
+    #info-panel {
+      position: absolute;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 16px 24px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+      opacity: 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+    }
+
+    #info-panel.visible {
+      bottom: 40px;
+      opacity: 1;
+    }
+
+    #info-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+      margin: 0;
+    }
+
+    #info-details {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard">
+    <h1>Red Ciclista Madrid</h1>
+    <p>Mapa inteligente autogenerado desde OSM analizando tipología y seguridad en ruta.</p>
+    
+    <div class="legend">
+      <div class="legend-item">
+        <div class="color-box" style="background: #a855f7;"></div>
+        <span>Anillo Verde Ciclista</span>
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background: #22c55e;"></div>
+        <span>Alta Seguridad (Carril Bici)</span>
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background: #eab308;"></div>
+        <span>Media Seguridad (Senda/Pintura)</span>
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background: #ef4444;"></div>
+        <span>Baja Seguridad (Ciclocarril)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="routing-panel">
+    <h2>Navegar a destino</h2>
+    <input type="text" id="destination-input" class="routing-input" placeholder="Introduce el destino..." />
+    <button id="navigate-btn" class="routing-btn">
+      <span style="display:flex; align-items:center; justify-content:center; gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+        Llevarme allí (GPS)
+      </span>
+    </button>
+    <p id="routing-status" class="routing-status"></p>
+  </div>
+
+  <div id="info-panel">
+    <p id="info-name">Calle de Ejemplo</p>
+    <p id="info-details">Asfalto • Alta Seguridad</p>
+  </div>
+
+  <div id="map"></div>
+
+  <script>
+    let map;
+    let directionsService;
+    let directionsRenderer;
+
+    // Colores y utilidades
+    const colors = {
+      anilloVerde: '#a855f7',
+      seguridadAlta: '#22c55e',
+      seguridadMedia: '#eab308',
+      seguridadBaja: '#ef4444',
+      desconocido: '#94a3b8'
+    };
+
+    async function initMap() {
+      // Madrid center
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 40.4168, lng: -3.7038 },
+        zoom: 12,
+        mapId: '8e0a97af9386fef', // Map ID for vector rendering (optional default)
+        disableDefaultUI: true,
+        styles: [ // Dark mode premium styled map
+          { elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#8ec3b9" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#1a3646" }] },
+          { featureType: "administrative.country", elementType: "geometry.stroke", stylers: [{ color: "#4b6878" }] },
+          { featureType: "administrative.land_parcel", elementType: "labels.text.fill", stylers: [{ color: "#64779e" }] },
+          { featureType: "landscape.man_made", elementType: "geometry.stroke", stylers: [{ color: "#334e87" }] },
+          { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#023e58" }] },
+          { featureType: "poi", elementType: "geometry", stylers: [{ color: "#283d6a" }] },
+          { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#6f9ba5" }] },
+          { featureType: "poi", elementType: "labels.text.stroke", stylers: [{ color: "#1d2c4d" }] },
+          { featureType: "poi.park", elementType: "geometry.fill", stylers: [{ color: "#023e58" }] },
+          { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#3C7680" }] },
+          { featureType: "road", elementType: "geometry", stylers: [{ color: "#304a7d" }] },
+          { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#98a5be" }] },
+          { featureType: "road", elementType: "labels.text.stroke", stylers: [{ color: "#1d2c4d" }] },
+          { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2c6675" }] },
+          { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#255763" }] },
+          { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#b0d5ce" }] },
+          { featureType: "road.highway", elementType: "labels.text.stroke", stylers: [{ color: "#023e58" }] },
+          { featureType: "transit", elementType: "labels.text.fill", stylers: [{ color: "#98a5be" }] },
+          { featureType: "transit", elementType: "labels.text.stroke", stylers: [{ color: "#1d2c4d" }] },
+          { featureType: "transit.line", elementType: "geometry.fill", stylers: [{ color: "#283d6a" }] },
+          { featureType: "transit.station", elementType: "geometry", stylers: [{ color: "#3a4762" }] },
+          { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e1626" }] },
+          { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#4e6d70" }] }
+        ]
+      });
+
+      // Configuraciones de Rutas
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: false,
+        polylineOptions: {
+          strokeColor: '#38bdf8',
+          strokeWeight: 6,
+          strokeOpacity: 0.9,
+          zIndex: 50
+        }
+      });
+
+      // Autocomplete para el input
+      const input = document.getElementById('destination-input');
+      const autocomplete = new google.maps.places.Autocomplete(input, {
+        strictBounds: false
+      });
+
+      // Bind viewport changes to autocomplete bounds map updates
+      map.addListener("bounds_changed", () => {
+        autocomplete.setBounds(map.getBounds());
+      });
+
+      // Evento de botón de navegación
+      const btn = document.getElementById('navigate-btn');
+      const statusText = document.getElementById('routing-status');
+
+      btn.addEventListener('click', () => {
+        const place = autocomplete.getPlace();
+        
+        if (!place || !place.geometry) {
+           statusText.textContent = "Por favor selecciona un destino de la lista autocompletada.";
+           return;
+        }
+
+        statusText.textContent = "Ubicando tu posición GPS...";
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+
+              statusText.textContent = "Calculando ruta ciclista...";
+
+              const request = {
+                origin: pos,
+                destination: place.geometry.location,
+                travelMode: google.maps.TravelMode.BICYCLING
+              };
+
+              directionsService.route(request, (result, status) => {
+                if (status == 'OK') {
+                  directionsRenderer.setDirections(result);
+                  statusText.textContent = "¡A pedalear! " + result.routes[0].legs[0].distance.text + " / " + result.routes[0].legs[0].duration.text;
+                } else {
+                  statusText.textContent = "No se pudo calcular la ruta: " + status;
+                }
+              });
+
+            },
+            (error) => {
+              console.error(error);
+              statusText.textContent = "Error: comprueba los permisos de GPS de tu navegador.";
+            },
+            { enableHighAccuracy: true }
+          );
+        } else {
+          statusText.textContent = "Tu navegador no soporta geolocalización.";
+        }
+      });
+
+      // Load GeoJSON Data
+      try {
+        const response = await fetch('./rutas_ciclistas_madrid.json');
+        const geojson = await response.json();
+        
+        map.data.addGeoJson(geojson);
+
+        // Style features dynamically based on GeoJSON properties
+        map.data.setStyle((feature) => {
+          let safety = feature.getProperty('safety');
+          let type = feature.getProperty('type');
+          
+          let color = colors.desconocido;
+          let weight = 4;
+          let zIndex = 1;
+
+          if (type && type.includes('Anillo Verde')) {
+            color = colors.anilloVerde;
+            weight = 6;
+            zIndex = 10;
+          } else if (safety) {
+            if (safety.includes('Alta')) color = colors.seguridadAlta;
+            else if (safety.includes('Media')) color = colors.seguridadMedia;
+            else if (safety.includes('Baja')) color = colors.seguridadBaja;
+          }
+
+          return {
+            strokeColor: color,
+            strokeWeight: weight,
+            strokeOpacity: 0.8,
+            zIndex: zIndex
+          };
+        });
+
+        // Hover events for interactivity setup
+        const infoPanel = document.getElementById('info-panel');
+        const infoName = document.getElementById('info-name');
+        const infoDetails = document.getElementById('info-details');
+
+        map.data.addListener('mouseover', (event) => {
+          map.data.revertStyle(); // reset all
+          map.data.overrideStyle(event.feature, { strokeOpacity: 1, strokeWeight: 8 });
+
+          const props = event.feature.j || event.feature.h || event.feature.v; // accessing properties roughly depending on API var
+          const name = event.feature.getProperty('name');
+          const type = event.feature.getProperty('type');
+          const safety = event.feature.getProperty('safety');
+          const surface = event.feature.getProperty('surface');
+          
+          infoName.textContent = name || 'Tramo sin nombre';
+          infoDetails.innerHTML = `<strong>${type}</strong><br/>Seguridad: ${safety} &bull; Superficie: ${surface}`;
+          
+          infoPanel.classList.add('visible');
+        });
+
+        map.data.addListener('mouseout', (event) => {
+          map.data.revertStyle();
+          infoPanel.classList.remove('visible');
+        });
+
+      } catch(e) {
+        console.error("Error cargando GeoJSON:", e);
+        alert("Para ver este mapa correctamente debes servirlo desde un servidor local (ej. npx http-server) debido a la política de CORS de los navegadores para leer archivos locales.");
+      }
+    }
+  </script>
+  <!-- Inject API Key synchronously for this custom test -> Replace YOUR_API_KEY if needed. The provided API key is injected directly -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMDPcakMCc9kQ2ee8pj3b92T5MclUfonY&libraries=places&callback=initMap" async defer></script>
+</body>
+</html>
