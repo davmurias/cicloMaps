@@ -8,6 +8,14 @@ import './App.css'
 function App() {
   const [hoverInfo, setHoverInfo] = useState(null)
   const [history, setHistory] = useState([])
+  const [routeParams, setRouteParams] = useState(null)
+  
+  const [filters, setFilters] = useState({
+    anillo: true,
+    alta: true,
+    media: true,
+    baja: true
+  })
 
   // Cargar historial desde el Backend (Paso 4b - Integración)
   const fetchHistory = async () => {
@@ -30,17 +38,15 @@ function App() {
 
   return (
     <div className="app-container">
-      <Dashboard />
-      <RoutingPanel onRouteSaved={fetchHistory} />
-      <MapContainer onHover={setHoverInfo} />
+      <Dashboard 
+        history={history} 
+        onSelectRoute={setRouteParams} 
+        filters={filters} 
+        onToggleFilter={(key) => setFilters(prev => ({ ...prev, [key]: !prev[key] }))} 
+      />
+      <RoutingPanel onRouteSaved={fetchHistory} onCalculateRoute={setRouteParams} />
+      <MapContainer onHover={setHoverInfo} routeParams={routeParams} setRouteParams={setRouteParams} filters={filters} />
       <InfoPanel info={hoverInfo} />
-      
-      {/* Mini panel de historial opcional */}
-      {history.length > 0 && (
-         <div className="history-toast">
-           Ultima ruta: {history[history.length - 1].destination}
-         </div>
-      )}
     </div>
   )
 }

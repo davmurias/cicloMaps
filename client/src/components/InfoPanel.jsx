@@ -9,7 +9,7 @@ const InfoPanel = ({ info }) => {
         Seguridad: {info.safety} &bull; Superficie: {info.surface}
       </p>
 
-      <style jsx>{`
+      <style>{`
         .info-panel {
           position: absolute;
           bottom: 40px;

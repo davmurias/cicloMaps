@@ -12,10 +12,10 @@ import { SaveRouteUseCase } from './core/application/SaveRouteUseCase.js';
 import { RoutesController } from './adapters/inbound/RoutesController.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const logger = pino({ transport: { target: 'pino-pretty' } });
+const logger = pino();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3999;
 
 // Middlewares
 app.use(cors());
@@ -39,8 +39,14 @@ const saveRouteUC = new SaveRouteUseCase(repository);
 const controller = new RoutesController(getHistoryUC, saveRouteUC);
 
 // Rutas
+app.get('/', (req, res) => res.send('Backend Activo v2 - GeoJSON Ready'));
 app.get('/api/routes', (req, res) => controller.getHistory(req, res));
 app.post('/api/routes', (req, res) => controller.saveRoute(req, res));
+
+// Endpoint para servir el GeoJSON de la red ciclista
+app.get('/api/geojson', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../../rutas_ciclistas_madrid.json'));
+});
 
 // Error handling
 app.use((err, req, res, next) => {
