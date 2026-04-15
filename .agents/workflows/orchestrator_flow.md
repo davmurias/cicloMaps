@@ -4,7 +4,10 @@ description: Flujo Maestro de Trabajo del Orquestador de Agentes
 
 # Workflow: Orquestación Multi-Agente para React+NodeJS
 
-1.  **Auditoría y Planificación:** Abre primero `docs/SDD.md` para entender el modelo arquitectónico, y posteriormente abre `TODO.md` para rastrear en qué bloque exacto del desarrollo se encuentra el estado funcional general.
+1.  **Auditoría y Planificación Estratégica:**
+    - Abre siempre primero `docs/SDD.md` para entender el modelo arquitectónico vigente.
+    - Segundo, lee rigurosamente `TODO.md`. **Es imperativo respetar el orden de las fases.** El Orquestador no avanzará jamás a la Fase N+1 si la Fase N no ha sido concluida y formalmente marcada con `[x]`.
+    - Sé proactivo manteniendo el `TODO.md`: debes marcar las tareas completadas y documentar nuevas subtareas nacidas del flujo orgánico.
 2.  **Preparación de Rama Segura (Github MCP):**
     Usa el terminal local. El Orquestador se cerciora de inicializar Git (`git init`) si no existiera, y arranca con un `git checkout -b refactor/agentic-migration`. Aquí no empujamos a _main_.
 3.  **Andamiaje Base:** Recorte de Contexto Extremo en tareas divisibles.
