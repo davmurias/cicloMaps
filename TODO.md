@@ -31,3 +31,27 @@ El siguiente documento actúa como Backlog de producto para hacer el seguimiento
   - [x] Capturar eventos de click en el mapa (o en la polilínea) para designar una nueva coordenada intermedia.
   - [x] Calcular matemáticamente la posición lógica (cálculo de proximidad a otros puntos) para reordenar la caja de *waypoints*.
   - [x] Proveer método visual (click derecho o botón de eliminar en panel) para destruir los waypoints individualmente y recalcular la ruta.
+
+## Fase 7: DevOps, Seguridad y Escalado (Opción B)
+
+- [ ] **7.1 Infraestructura Local (Dockerización base):**
+  - [ ] Crear variables de entorno (`.env`) aislando Google Maps API Key y demás secretos en Front y Back.
+  - [ ] Crear el `Dockerfile` de Node.js (Servidor) y el `Dockerfile` multistage para React.
+  - [ ] Proveer un `docker-compose.yml` unificador.
+
+- [ ] **7.2 Backend: Proxying, Caché y Monorepo:**
+  - [ ] Desplegar un proxy local en Express `/api/routing` para evitar llamadas directas a Nominatim (CORS) y absorber Rate Limiting.
+  - [ ] Extraer esquemas *Zod* a un sub-módulo accesible por cliente y servidor (Monorepo Compartido).
+  - [ ] Implementar middleware de rate-limiting (OWASP).
+
+- [ ] **7.3 Migración Geospacial (Opción B PostGIS):**
+  - [ ] Escalar backend instalando librería pg/TypeORM o equivalente, e inyectando un contenedor `postgis`.
+  - [ ] Aplicar módulo de encriptamiento/insercción de nuestro propio GeoJSON dentro de la BBDD local.
+  - [ ] Sustituir lógica OSRM pública para permitir cálculo directo sobre Grafos Locales.
+
+- [ ] **7.4 Feature Funcional: Exportación:**
+  - [ ] Habilitar exportación de la topología final (`.gpx`) al ciclista.
+
+- [ ] **7.5 UI/UX y A11Y Audit:**
+  - [ ] Someter SPA a análisis bajo preceptos A11Y (contrastes, tabulación, aria-labels).
+  - [ ] Ajustes Glassmorphism definitivos adaptados a Bottom Sheet en *mobile view*.
